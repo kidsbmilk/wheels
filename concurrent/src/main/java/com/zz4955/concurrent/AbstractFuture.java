@@ -37,10 +37,10 @@ public abstract class AbstractFuture<V> implements ListenableFuture<V> {
         Throwable thrownUnsafeFailure = null;
         Throwable thrownAtomicReferenceFieldUpdaterFailure =  null;
 
-        try {
-            helper = new UnsafeAtomicHelper();
-        } catch (Throwable unsafeFailure) {
-            thrownUnsafeFailure = unsafeFailure;
+//        try {
+//            helper = new UnsafeAtomicHelper();
+//        } catch (Throwable unsafeFailure) {
+//            thrownUnsafeFailure = unsafeFailure;
             try {
                 helper = new SafeAtomicHelper(
                         newUpdater(Waiter.class, Thread.class, "thread"),
@@ -53,7 +53,7 @@ public abstract class AbstractFuture<V> implements ListenableFuture<V> {
                 thrownAtomicReferenceFieldUpdaterFailure = atomicReferenceFieldUpdaterFailure;
                 helper = new SynchronizedHelper();
             }
-        }
+//        }
         ATOMIC_HELPER = helper;
         Class<?> ensureLoaded = LockSupport.class;
         if(thrownAtomicReferenceFieldUpdaterFailure != null) {
@@ -659,6 +659,7 @@ public abstract class AbstractFuture<V> implements ListenableFuture<V> {
         abstract boolean casValue(AbstractFuture<?> future, Object expect, Object update);
     }
 
+    /*
     private static final class UnsafeAtomicHelper extends AtomicHelper {
         static final sun.misc.Unsafe UNSAFE;
         static final long LISTENERS_OFFSET;
@@ -731,6 +732,7 @@ public abstract class AbstractFuture<V> implements ListenableFuture<V> {
             return UNSAFE.compareAndSwapObject(future, VALUE_OFFSET, expect, update);
         }
     }
+    */
 
     private static final class SafeAtomicHelper extends AtomicHelper {
         final AtomicReferenceFieldUpdater<Waiter, Thread> waiterThreadUpdater;
