@@ -1,4 +1,4 @@
-package com.zz4955.test;
+package com.zz4955.example;
 
 import com.zz4955.concurrent.ListenableFuture;
 import com.zz4955.concurrent.MoreExecutors;
@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class ListenableFutureTest {
+public class ListenableFutureEx {
 
     public static void main(String[] args) {
         ExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(5));
@@ -17,7 +17,7 @@ public class ListenableFutureTest {
                     @Override
                     public String call() throws Exception {
                         Thread.sleep(5 * 1000);
-                        return "task success";
+                        return "task success in future";
                     }
                 }
         );
@@ -31,7 +31,7 @@ public class ListenableFutureTest {
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
-                System.out.println("run success");
+                System.out.println("run success after future done.");
                 executorService.shutdownNow();
             }
         }, executorService);
