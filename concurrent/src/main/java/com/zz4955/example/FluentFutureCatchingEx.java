@@ -12,7 +12,7 @@ import java.util.function.Function;
 
 public class FluentFutureCatchingEx {
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         ExecutorService executorService = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(5));
         ListenableFuture<Integer> listenableFuture1 = (ListenableFuture<Integer>)executorService.submit(new Callable<Integer>() {
                 @Override
@@ -55,10 +55,14 @@ public class FluentFutureCatchingEx {
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
+                try {
+                    Thread.sleep(5 * 1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                executorService.shutdownNow();
             }
         }, executorService);
         System.out.println("main is done.");
-        Thread.sleep(5 * 1000);
-        executorService.shutdownNow();
     }
 }
