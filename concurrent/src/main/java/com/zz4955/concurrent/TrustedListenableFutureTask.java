@@ -4,6 +4,8 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RunnableFuture;
 
+import static com.zz4955.concurrent.Tools.checkNotNull;
+
 class TrustedListenableFutureTask<V> extends AbstractFuture.TrustedFuture<V>
                 implements RunnableFuture<V> {
 
@@ -130,12 +132,5 @@ class TrustedListenableFutureTask<V> extends AbstractFuture.TrustedFuture<V>
         String toPendingString() {
             return callable.toString();
         }
-    }
-
-    public static <T> T checkNotNull(T reference, Object errorMessage) {
-        if(reference == null) {
-            throw new NullPointerException(String.valueOf(errorMessage));
-        }
-        return reference;
     }
 }

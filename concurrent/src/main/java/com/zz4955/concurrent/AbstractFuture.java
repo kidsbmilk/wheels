@@ -14,7 +14,7 @@ import static com.zz4955.concurrent.Futures.getDone;
 import static com.zz4955.concurrent.MoreExecutors.directExecutor;
 import static java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater;
 
-public abstract class AbstractFuture<V> implements ListenableFuture<V> {
+public abstract class AbstractFuture<V> extends FluentFuture<V> {
 
     private static final Logger log = Logger.getLogger(AbstractFuture.class.getName());
 
