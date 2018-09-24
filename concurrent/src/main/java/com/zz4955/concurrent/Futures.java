@@ -38,4 +38,12 @@ public final class Futures {
             Executor executor) {
         return AbstractCatchingFuture.create(input, exceptionType, fallback, executor);
     }
+
+    public static <V, X extends Throwable> ListenableFuture<V> catchingAsync(
+            ListenableFuture<? extends V> input,
+            Class<X> exceptionType,
+            AsyncFunction<? super X, ? extends V> fallback,
+            Executor executor) {
+        return AbstractCatchingFuture.create(input, exceptionType, fallback, executor);
+    }
 }

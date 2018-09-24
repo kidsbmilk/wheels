@@ -17,4 +17,9 @@ public abstract class FluentFuture<V> implements ListenableFuture<V> {
             Class<X> exceptionType, Function<? super X, ? extends V> fallback, Executor executor) {
         return (FluentFuture<V>) Futures.catching(this, exceptionType, fallback, executor);
     }
+
+    public final <X extends Throwable> FluentFuture<V> catchingAsync(
+            Class<X> exceptionType, AsyncFunction<? super X, ? extends V> fallback, Executor executor) {
+        return (FluentFuture<V>) Futures.catchingAsync(this, exceptionType, fallback, executor);
+    }
 }
