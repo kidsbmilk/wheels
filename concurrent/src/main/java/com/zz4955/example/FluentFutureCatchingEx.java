@@ -37,12 +37,16 @@ public class FluentFutureCatchingEx {
         ListenableFuture<Integer> listenableFuture2 = FluentFuture.from(listenableFuture1)
                 .catching(
                         InterruptedException.class,
-                        new Function<InterruptedException, Integer>() {
-                            @Override
-                            public Integer apply(InterruptedException e) {
-                                System.out.println(e.getMessage());
-                                return 1;
-                            }
+//                        new Function<InterruptedException, Integer>() {
+//                            @Override
+//                            public Integer apply(InterruptedException e) {
+//                                System.out.println(e.getMessage());
+//                                return 1;
+//                            }
+//                        },
+                        e -> {
+                            System.out.println(e.getMessage());
+                            return 1;
                         },
                         executorService);
         listenableFuture2.addListener(new Runnable() {
