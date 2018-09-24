@@ -1,6 +1,8 @@
 package com.zz4955.concurrent;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 
 public abstract class FluentFuture<V> implements ListenableFuture<V> {
@@ -21,5 +23,10 @@ public abstract class FluentFuture<V> implements ListenableFuture<V> {
     public final <X extends Throwable> FluentFuture<V> catchingAsync(
             Class<X> exceptionType, AsyncFunction<? super X, ? extends V> fallback, Executor executor) {
         return (FluentFuture<V>) Futures.catchingAsync(this, exceptionType, fallback, executor);
+    }
+
+    public final FluentFuture<V> withTimeout(
+            long timeout, TimeUnit unit, ScheduledExecutorService scheduledExecutor) {
+        return (FluentFuture<V>) Futures.withTimeout(this, timeout, unit, scheduledExecutor);
     }
 }

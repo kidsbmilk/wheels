@@ -1,8 +1,6 @@
 package com.zz4955.concurrent;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 import java.util.function.Function;
 
 import static com.zz4955.concurrent.Tools.checkState;
@@ -45,5 +43,13 @@ public final class Futures {
             AsyncFunction<? super X, ? extends V> fallback,
             Executor executor) {
         return AbstractCatchingFuture.create(input, exceptionType, fallback, executor);
+    }
+
+    public static <V> ListenableFuture<V> withTimeout(
+            ListenableFuture<V> delegate,
+            long time,
+            TimeUnit unit,
+            ScheduledExecutorService scheduledExecutor) {
+        return TimeoutFuture.create(delegate, time, unit, scheduledExecutor);
     }
 }
