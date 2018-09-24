@@ -12,6 +12,7 @@ import java.util.logging.Logger;
 
 import static com.zz4955.concurrent.Futures.getDone;
 import static com.zz4955.concurrent.MoreExecutors.directExecutor;
+import static com.zz4955.concurrent.Tools.checkNotNull;
 import static java.util.concurrent.atomic.AtomicReferenceFieldUpdater.newUpdater;
 
 public abstract class AbstractFuture<V> extends FluentFuture<V> {
@@ -301,6 +302,8 @@ public abstract class AbstractFuture<V> extends FluentFuture<V> {
 
     @Override
     public void addListener(Runnable listener, Executor executor) {
+        checkNotNull(listener, "Runnable was null.");
+        checkNotNull(executor, "Executor was null.");
         Listener oldHead = listeners;
         if(oldHead != Listener.TOMBOSTONE) {
             Listener newNode = new Listener(listener, executor);
@@ -325,7 +328,7 @@ public abstract class AbstractFuture<V> extends FluentFuture<V> {
     }
 
     protected boolean setException(Throwable throwable) {
-        Object valutToSet = new Failure(throwable);
+        Object valutToSet = new Failure(checkNotNull(throwable));
         if(ATOMIC_HELPER.casValue(this, null, valutToSet)) {
             complete(this);
             return true;
@@ -334,6 +337,7 @@ public abstract class AbstractFuture<V> extends FluentFuture<V> {
     }
 
     protected boolean setFuture(ListenableFuture<? extends V> future) {
+        checkNotNull(future);
         Object localValue = value;
         if(localValue == null) {
             if(future.isDone()) {
@@ -603,7 +607,7 @@ public abstract class AbstractFuture<V> extends FluentFuture<V> {
         final Throwable exception;
 
         Failure(Throwable exception) {
-            this.exception = exception;
+            this.exception = checkNotNull(exception);
         }
     }
 

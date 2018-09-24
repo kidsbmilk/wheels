@@ -69,7 +69,7 @@ class TrustedListenableFutureTask<V> extends AbstractFuture.TrustedFuture<V>
         private final Callable<V> callable;
 
         TrustedFutureInterruptibleTask(Callable<V> callable) {
-            this.callable = callable;
+            this.callable = checkNotNull(callable);
         }
 
         @Override
@@ -102,7 +102,7 @@ class TrustedListenableFutureTask<V> extends AbstractFuture.TrustedFuture<V>
         private final AsyncCallable<V> callable;
 
         TrustedFutureInterruptibleAsyncTask(AsyncCallable<V> callable) {
-            this.callable = callable;
+            this.callable = checkNotNull(callable);
         }
 
         @Override
