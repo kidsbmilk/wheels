@@ -3,6 +3,7 @@ package com.zz4955.concurrent;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
+import static com.zz4955.concurrent.Tools.checkNotNull;
 import static com.zz4955.concurrent.Tools.checkState;
 
 public final class Futures {
@@ -65,5 +66,44 @@ public final class Futures {
             AsyncFunction<? super I, ? extends O> function,
             Executor executor) {
         return AbstractTransformFuture.create(input, function, executor);
+    }
+
+    public static <V> void addCallback(
+            final ListenableFuture<V> future,
+            final FutureCallback<? super V> callback,
+            Executor executor) {
+        checkNotNull(callback);
+        future.addListener(new CallbackListener<V>(future, callback), executor);
+    }
+
+    private static final class CallbackListener<V> implements Runnable {
+
+        final Future<V> future;
+        final FutureCallback<? super V> callback;
+
+        CallbackListener(Future<V> future, FutureCallback<? super V> callback) {
+            this.future = future;
+            this.callback = callback;
+        }
+
+        @Override
+        public void run() {
+            final V value;
+            try {
+                value = getDone(future);
+            } catch (ExecutionException e) {
+                callback.onFailure(e.getCause());
+                return ;
+            } catch (RuntimeException | Error e) {
+                callback.onFailure(e);
+                return ;
+            }
+            callback.onSuccess(value);
+        }
+
+        @Override
+        public String toString() {
+            return this.getClass().getCanonicalName() + "[callback= " + callback + "]"; // 这里有个MoreObjects的工具类，TODO.
+        }
     }
 }
