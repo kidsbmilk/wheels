@@ -1,7 +1,10 @@
 package com.zz4955.concurrent;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Logger;
 
+import static com.zz4955.concurrent.MoreExecutors.directExecutor;
 import static java.util.logging.Level.WARNING;
 
 public class Tools {
@@ -28,6 +31,35 @@ public class Tools {
 
     public static boolean isInstanceOfThrowableClass(Throwable t, Class<? extends Throwable> expectedClass) {
         return expectedClass.isInstance(t);
+    }
+
+    public static Executor rejectionPropagatingExecutor(
+            final Executor delegate, final AbstractFuture<?> future) {
+        checkNotNull(delegate);
+        checkNotNull(future);
+        if(delegate == directExecutor()) {
+            return delegate;
+        }
+        return new Executor() {
+            boolean thrownFromDelegate = true;
+
+            @Override
+            public void execute(Runnable command) {
+                try {
+                    delegate.execute(new Runnable() {
+                        @Override
+                        public void run() {
+                            thrownFromDelegate = false;
+                            command.run();
+                        }
+                    });
+                } catch (RejectedExecutionException e) {
+                    if(thrownFromDelegate) {
+                        future.setException(e);
+                    }
+                }
+            }
+        };
     }
 
     public static String lenientFormat(String template, Object... args) {

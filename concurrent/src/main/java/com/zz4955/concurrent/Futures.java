@@ -52,4 +52,11 @@ public final class Futures {
             ScheduledExecutorService scheduledExecutor) {
         return TimeoutFuture.create(delegate, time, unit, scheduledExecutor);
     }
+
+    public static <I, O> ListenableFuture<O> transform(
+            ListenableFuture<I> input,
+            Function<? super I, ? extends O> function,
+            Executor executor) {
+        return AbstractTransformFuture.create(input, function, executor);
+    }
 }

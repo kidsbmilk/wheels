@@ -20,35 +20,6 @@ public final class MoreExecutors {
                 : new ListeningDecorator(delegate);
     }
 
-    static Executor rejectionPropagatingExecutor(
-            final Executor delegate, final AbstractFuture<?> future) {
-        checkNotNull(delegate);
-        checkNotNull(future);
-        if(delegate == directExecutor()) {
-            return delegate;
-        }
-        return new Executor() {
-            boolean thrownFromDelegate = true;
-
-            @Override
-            public void execute(Runnable command) {
-                try {
-                    delegate.execute(new Runnable() {
-                        @Override
-                        public void run() {
-                            thrownFromDelegate = false;
-                            command.run();
-                        }
-                    });
-                } catch (RejectedExecutionException e) {
-                    if(thrownFromDelegate) {
-                        future.setException(e);
-                    }
-                }
-            }
-        };
-    }
-
     private static class ListeningDecorator extends AbstractListeningExecutorService {
         private final ExecutorService delegate;
 

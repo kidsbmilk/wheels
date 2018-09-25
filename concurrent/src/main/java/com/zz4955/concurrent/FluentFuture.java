@@ -29,4 +29,8 @@ public abstract class FluentFuture<V> implements ListenableFuture<V> {
             long timeout, TimeUnit unit, ScheduledExecutorService scheduledExecutor) {
         return (FluentFuture<V>) Futures.withTimeout(this, timeout, unit, scheduledExecutor);
     }
+
+    public final <T> FluentFuture<T> transform(Function<? super V, T> function, Executor executor) {
+        return (FluentFuture<T>) Futures.transform(this, function, executor);
+    }
 }

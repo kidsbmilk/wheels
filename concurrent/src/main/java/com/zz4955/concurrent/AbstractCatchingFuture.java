@@ -5,9 +5,9 @@ import java.util.concurrent.Executor;
 import java.util.function.Function;
 
 import static com.zz4955.concurrent.Futures.getDone;
-import static com.zz4955.concurrent.MoreExecutors.rejectionPropagatingExecutor;
 import static com.zz4955.concurrent.Tools.checkNotNull;
 import static com.zz4955.concurrent.Tools.isInstanceOfThrowableClass;
+import static com.zz4955.concurrent.Tools.rejectionPropagatingExecutor;
 
 abstract class AbstractCatchingFuture<V, X extends Throwable, F, T>
         extends AbstractFuture.TrustedFuture<V> implements Runnable {
