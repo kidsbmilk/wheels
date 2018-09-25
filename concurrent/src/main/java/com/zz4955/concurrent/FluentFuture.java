@@ -33,4 +33,8 @@ public abstract class FluentFuture<V> implements ListenableFuture<V> {
     public final <T> FluentFuture<T> transform(Function<? super V, T> function, Executor executor) {
         return (FluentFuture<T>) Futures.transform(this, function, executor);
     }
+
+    public final <T> FluentFuture<T> transformAsync(AsyncFunction<? super V, T> function, Executor executor) {
+        return (FluentFuture<T>) Futures.transformAsync(this, function, executor);
+    }
 }

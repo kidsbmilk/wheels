@@ -59,4 +59,11 @@ public final class Futures {
             Executor executor) {
         return AbstractTransformFuture.create(input, function, executor);
     }
+
+    public static <I, O> ListenableFuture<O> transformAsync(
+            ListenableFuture<I> input,
+            AsyncFunction<? super I, ? extends O> function,
+            Executor executor) {
+        return AbstractTransformFuture.create(input, function, executor);
+    }
 }
