@@ -1,5 +1,6 @@
 package com.zz4955.concurrent;
 
+import java.util.List;
 import java.util.concurrent.*;
 import java.util.function.Function;
 
@@ -105,5 +106,9 @@ public final class Futures {
         public String toString() {
             return this.getClass().getCanonicalName() + "[callback= " + callback + "]"; // 这里有个MoreObjects的工具类，TODO.
         }
+    }
+
+    public static <V> ListenableFuture<List<V>> allAsList(ListenableFuture<? extends V>... futures) {
+        return new ListFuture<V>(ImmutableList.copyOf(futures), true);
     }
 }
