@@ -1,5 +1,7 @@
 package com.zz4955.concurrent;
 
+import com.zz4955.concurrent.AbstractFuture;
+
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.logging.Logger;
