@@ -2,17 +2,24 @@ package com.zz4955.concurrent;
 
 import com.google.common.collect.ImmutableCollection;
 
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static com.zz4955.concurrent.Futures.getDone;
+import static com.zz4955.concurrent.MoreExecutors.directExecutor;
 import static com.zz4955.concurrent.Tools.checkNotNull;
+import static com.zz4955.concurrent.Tools.checkState;
 
-public class AggregateFuture<InputT, OutputT> extends AbstractFuture.TrustedFuture<OutputT> {
+abstract class AggregateFuture<InputT, OutputT> extends AbstractFuture.TrustedFuture<OutputT> {
 
     private static final Logger logger = Logger.getLogger(AggregateFuture.class.getName());
 
     private RunningState runningState;
 
-    abstract class RunningState extends AggregateFuture implements Runnable {
+    abstract class RunningState extends AggregateFutureState implements Runnable {
         private ImmutableCollection<? extends ListenableFuture<? extends InputT>> futures;
         private final boolean allMustSucceed;
         private final boolean collectsValues;
@@ -38,8 +45,108 @@ public class AggregateFuture<InputT, OutputT> extends AbstractFuture.TrustedFutu
                 return ;
             }
             if(allMustSucceed) {
-
+                int i = 0;
+                for(final ListenableFuture<? extends InputT> listenableFuture : futures) {
+                    final int index = i ++;
+                    listenableFuture.addListener(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                handleOneInputDone(index, listenableFuture);
+                            } finally {
+                                decrementCountAndMaybeComplete();
+                            }
+                        }
+                    }, directExecutor());
+                }
+            } else {
+                for(ListenableFuture<? extends InputT> listenableFuture : futures) {
+                    listenableFuture.addListener(this, directExecutor());
+                }
             }
         }
+
+        private void handleException(Throwable throwable) {
+            checkNotNull(throwable);
+
+            boolean completedWithFailure = false;
+            boolean firstTimeSeeingThisException = true;
+            if(allMustSucceed) {
+                completedWithFailure = setException(throwable);
+                if(completedWithFailure) {
+                    releaseResourceAfterFailure();
+                } else {
+                    firstTimeSeeingThisException = addCausalChain(getOrInitSeenExceptions(), throwable);
+                }
+            }
+
+            if(throwable instanceof Error | (allMustSucceed & !completedWithFailure & firstTimeSeeingThisException)) {
+                String message = (throwable instanceof Error)
+                        ? "input Future failed with Error"
+                        : "Got more than one input Future failure. Logging failures after the first";
+                logger.log(Level.SEVERE, message, throwable);
+            }
+        }
+
+        @Override
+        final void addInitialException(Set<Throwable> seen) {
+            if(!isCancelled()) {
+                boolean unused = addCausalChain(seen, trustedGetException());
+            }
+        }
+
+        private void handleOneInputDone(int index, Future<? extends InputT> future) {
+            checkState(allMustSucceed || !isDone() || isCancelled(),
+                    "Future was done before all dependencies completed");
+
+            try {
+                checkState(future.isDone(), "Tried to set value from future which is not done");
+                if(allMustSucceed) {
+                    if(future.isCancelled()) {
+                        runningState = null;
+                        cancel(false);
+                    } else {
+                        InputT result = getDone(future);
+                        if(collectsValues) {
+                            collectOneValue(allMustSucceed, index, result);
+                        }
+                    }
+                } else if(collectsValues && !future.isCancelled()) {
+                    collectOneValue(allMustSucceed, index, getDone(future));
+                }
+            } catch (ExecutionException e) {
+                handleException(e.getCause());
+            } catch (Throwable t) {
+                handleException(t);
+            }
+        }
+
+        private void decrementCountAndMaybeComplete() {
+            int newRemaining = decrementRemainingAndGet();
+            checkState(newRemaining >= 0, "Less than 0 remaining futures");
+            if(newRemaining == 0) {
+                processCompleted();
+            }
+        }
+
+        private void processCompleted() {
+            if(collectsValues & !allMustSucceed) {
+                int i = 0;
+                for(ListenableFuture<? extends InputT> listenableFuture : futures) {
+                    handleOneInputDone(i++, listenableFuture);
+                }
+            }
+            handleAllCompleted();
+        }
+
+        void releaseResourceAfterFailure() {
+            this.futures = null;
+        }
+
+        abstract void collectOneValue(boolean allMustSucceed, int index, InputT returnValue);
+
+        abstract void handleAllCompleted();
+
+        void interruptTask() {}
     }
 }
