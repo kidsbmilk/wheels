@@ -25,6 +25,12 @@ public class Tools {
         return reference;
     }
 
+    public static void checkState(boolean expression) {
+        if(!expression) {
+            throw new IllegalStateException();
+        }
+    }
+
     public static void checkState(boolean expression, Object errorMessage) {
         if(!expression) {
             throw new IllegalStateException(String.valueOf(errorMessage));

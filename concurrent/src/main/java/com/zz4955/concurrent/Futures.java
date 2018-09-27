@@ -111,6 +111,6 @@ public final class Futures {
     }
 
     public static <V> ListenableFuture<List<V>> allAsList(ListenableFuture<? extends V>... futures) {
-        return new ListFuture<V>(ImmutableList.copyOf(futures), true);
+        return new CollectionFuture.ListFuture<V>(ImmutableList.copyOf(futures), true);
     }
 }

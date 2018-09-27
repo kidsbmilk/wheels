@@ -19,6 +19,55 @@ abstract class AggregateFuture<InputT, OutputT> extends AbstractFuture.TrustedFu
 
     private RunningState runningState;
 
+    @Override
+    protected final void afterDone() {
+        super.afterDone();
+        RunningState localRunningState = runningState;
+        if(localRunningState != null) {
+            this.runningState = null;
+            ImmutableCollection<? extends ListenableFuture<? extends InputT>> futures = localRunningState.futures;
+            boolean wasInterrupted = wasInterrupted();
+
+            if(wasInterrupted) {
+                localRunningState.interruptTask();;
+            }
+
+            if(isCancelled() & futures != null) {
+                for(ListenableFuture<?> future : futures) {
+                    future.cancel(wasInterrupted);
+                }
+            }
+        }
+    }
+
+    @Override
+    protected String pendingToString() {
+        RunningState localRunningState = runningState;
+        if(localRunningState == null) {
+            return null;
+        }
+        ImmutableCollection<? extends ListenableFuture<? extends InputT>> localFutures = localRunningState.futures;
+        if(localFutures != null) {
+            return "futures=[" + localFutures + "]";
+        }
+        return null;
+    }
+
+    final void init(RunningState runningState) {
+        this.runningState = runningState;
+        runningState.init();
+    }
+
+    private static boolean addCausalChain(Set<Throwable> seen, Throwable t) {
+        for(; t != null; t = t.getCause()) {
+            boolean firstTimeSeen = seen.add(t);
+            if(!firstTimeSeen) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     abstract class RunningState extends AggregateFutureState implements Runnable {
         private ImmutableCollection<? extends ListenableFuture<? extends InputT>> futures;
         private final boolean allMustSucceed;
@@ -74,7 +123,7 @@ abstract class AggregateFuture<InputT, OutputT> extends AbstractFuture.TrustedFu
             if(allMustSucceed) {
                 completedWithFailure = setException(throwable);
                 if(completedWithFailure) {
-                    releaseResourceAfterFailure();
+                    releaseResourcesAfterFailure();
                 } else {
                     firstTimeSeeingThisException = addCausalChain(getOrInitSeenExceptions(), throwable);
                 }
@@ -139,7 +188,7 @@ abstract class AggregateFuture<InputT, OutputT> extends AbstractFuture.TrustedFu
             handleAllCompleted();
         }
 
-        void releaseResourceAfterFailure() {
+        void releaseResourcesAfterFailure() {
             this.futures = null;
         }
 
