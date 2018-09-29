@@ -11,7 +11,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-public class FuturesAllAsListEx {
+/**
+ * 这里面打印两次异常，这两次异常是中断异常，要看清楚，其余逻辑跟FuturesAllAsListEx_1里的分析是一样的。
+ */
+public class FuturesAllAsListEx_3 {
 
     public static void main(String[] args) {
         Exception e = new MyExceptionForEx("test");
@@ -19,27 +22,21 @@ public class FuturesAllAsListEx {
         ListenableFuture<Integer> listenableFuture1 = (ListenableFuture<Integer>)executorService.submit(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-//                return 1;
-//                throw e;
-                throw new MyExceptionForEx("test");
+                throw e;
             }
         });
         ListenableFuture<Integer> listenableFuture2 = (ListenableFuture<Integer>)executorService.submit(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-//                return 2;
-//                Thread.sleep(5 * 1000);
-//                throw e;
-                throw new MyExceptionForEx("test");
+                Thread.sleep(5 * 1000);
+                throw e;
             }
         });
         ListenableFuture<Integer> listenableFuture3 = (ListenableFuture<Integer>)executorService.submit(new Callable<Integer>() {
             @Override
             public Integer call() throws Exception {
-//                return 2;
-//                Thread.sleep(2 * 1000);
-//                throw e;
-                throw new MyExceptionForEx("test");
+                Thread.sleep(2 * 1000);
+                throw e;
             }
         });
 //        ListenableFuture<List<Integer>> listListenableFuture = Futures.allAsList(listenableFuture1, listenableFuture2);
