@@ -117,4 +117,8 @@ public final class Futures {
     public static <V> ListenableFuture<List<V>> allAsList(Iterable<? extends ListenableFuture<? extends V>> futures) {
         return new CollectionFuture.ListFuture<V>(ImmutableList.copyOf(futures), true);
     }
+
+    public static <V, X extends Exception> V getChecked(Future<V> future, Class<X> exceptionClass) throws X {
+        return FuturesGetChecked.getChecked(future, exceptionClass);
+    }
 }

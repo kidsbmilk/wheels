@@ -2,19 +2,19 @@ package com.zz4955.example;
 
 public class MyExceptionForEx extends Exception {
 
-    MyExceptionForEx() {
-        super();
-    }
+    protected MyExceptionForEx() {}
 
-    MyExceptionForEx(String message) {
+    protected MyExceptionForEx(String message) {
         super(message);
     }
 
-    MyExceptionForEx(String message, Throwable cause) {
+    public MyExceptionForEx(String message, Throwable cause) {
         super(message, cause);
     }
 
-    MyExceptionForEx(Throwable cause) {
+    public MyExceptionForEx(Throwable cause) {
         super(cause);
     }
+
+    private static final long serialVersionUID = 0;
 }

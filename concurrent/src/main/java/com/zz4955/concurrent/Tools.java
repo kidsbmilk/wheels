@@ -43,6 +43,12 @@ public class Tools {
         }
     }
 
+    public static void checkArgument(boolean b, String errorMessageTemplate, Object p1) {
+        if(!b) {
+            throw new IllegalArgumentException(lenientFormat(errorMessageTemplate, p1));
+        }
+    }
+
     public static boolean isInstanceOfThrowableClass(Throwable t, Class<? extends Throwable> expectedClass) {
         return expectedClass.isInstance(t);
     }
