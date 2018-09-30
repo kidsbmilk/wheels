@@ -121,4 +121,8 @@ public final class Futures {
     public static <V, X extends Exception> V getChecked(Future<V> future, Class<X> exceptionClass) throws X {
         return FuturesGetChecked.getChecked(future, exceptionClass);
     }
+
+    public static <V, X extends Exception> V getChecked(Future<V> future, Class<X> exceptionClass, Long timeout, TimeUnit unit) throws X {
+        return FuturesGetChecked.getChecked(future, exceptionClass, timeout, unit);
+    }
 }
