@@ -8,29 +8,13 @@ import java.util.function.Function;
 
 import static com.zz4955.concurrent.Tools.checkNotNull;
 import static com.zz4955.concurrent.Tools.checkState;
+import static com.zz4955.concurrent.Uninterruptibles.getUninterruptibly;
 
 public final class Futures {
 
     public static <V> V getDone(Future<V> future) throws ExecutionException {
         checkState(future.isDone(), "Future was expected to be done: %s", future);
         return getUninterruptibly(future);
-    }
-
-    public static <V> V getUninterruptibly(Future<V> future) throws ExecutionException {
-        boolean interrupted = false;
-        try {
-            while(true) {
-                try {
-                    return future.get();
-                } catch (InterruptedException e) {
-                    interrupted = true;
-                }
-            }
-        } finally {
-            if(interrupted) {
-                Thread.currentThread().interrupt();
-            }
-        }
     }
 
     public static <V, X extends Throwable> ListenableFuture<V> catching(
@@ -124,5 +108,23 @@ public final class Futures {
 
     public static <V, X extends Exception> V getChecked(Future<V> future, Class<X> exceptionClass, Long timeout, TimeUnit unit) throws X {
         return FuturesGetChecked.getChecked(future, exceptionClass, timeout, unit);
+    }
+
+    public static <V> V getUnchecked(Future<V> future) {
+        checkNotNull(future);
+        try {
+            return getUninterruptibly(future);
+        } catch (ExecutionException e) {
+            wrapAndThrowUnchecked(e.getCause());
+            throw new AssertionError();
+        }
+    }
+
+    private static void wrapAndThrowUnchecked(Throwable cause) {
+        if(cause instanceof Error) {
+            throw new ExecutionError((Error) cause);
+        }
+
+        throw new UncheckedExecutionException(cause);
     }
 }
